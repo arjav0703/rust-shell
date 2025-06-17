@@ -100,29 +100,24 @@ fn is_executable(p: &Path) -> bool {
 
 /// Execute an external command (non-builtin) by spawning it and inheriting stdout/stderr.
 fn execute_external(cmd: &str, args: &[String]) {
-    match find_executable(cmd) {
-        Some(full_path) => {
-            let mut child = match Command::new(full_path)
-                .args(args)
-                .stdin(Stdio::inherit())
-                .stdout(Stdio::inherit())
-                .stderr(Stdio::inherit())
-                .spawn()
-            {
-                Ok(child) => child,
-                Err(e) => {
-                    eprintln!("{}: failed to execute: {}", cmd, e);
-                    return;
-                }
-            };
-
-            // wait for it to finish
-            if let Err(e) = child.wait() {
-                eprintln!("{}: failed while waiting: {}", cmd, e);
+    if find_executable(cmd).is_some() {
+        let mut child = match Command::new(cmd)
+            .args(args)
+            .stdin(Stdio::inherit())
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()
+        {
+            Ok(child) => child,
+            Err(e) => {
+                eprintln!("{}: failed to execute: {}", cmd, e);
+                return;
             }
-        }
-        None => {
-            println!("{}: command not found", cmd);
+        };
+
+        // wait for it to finish
+        if let Err(e) = child.wait() {
+            eprintln!("{}: failed while waiting: {}", cmd, e);
         }
     }
 }

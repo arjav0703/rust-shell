@@ -51,6 +51,6 @@ fn type_fn(input: &str, builtins: &[&str]) {
     if builtins.contains(&input) {
         println!("{} is a shell builtin", input);
     } else {
-        println!("{} is not a shell builtin", input);
+        println!("{}: not found", input);
     }
 }

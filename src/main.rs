@@ -1,6 +1,8 @@
 use std::io::{self, Write};
 
 fn main() {
+    let builtins = ["echo", "exit", "type"];
+
     let stdin = io::stdin();
     loop {
         print!("$ ");
@@ -19,7 +21,7 @@ fn main() {
         match command.as_str() {
             "exit" => break,
             "echo" => echo(args),
-            "type" => type_fn(args.first().map_or("", String::as_str)),
+            "type" => type_fn(args.first().map_or("", String::as_str), &builtins),
             command => println!("{}: command not found", command),
         }
     }
@@ -45,11 +47,10 @@ fn echo(args: Vec<String>) {
     }
 }
 
-fn type_fn(input: &str) {
-    match input {
-        "echo" => println!("echo is a shell builtin"),
-        "exit" => println!("exit is a shell builtin"),
-        "type" => println!("type is a shell builtin"),
-        _ => println!("{}: not found", input),
+fn type_fn(input: &str, builtins: &[&str]) {
+    if builtins.contains(&input) {
+        println!("{} is a shell builtin", input);
+    } else {
+        println!("{} is not a shell builtin", input);
     }
 }

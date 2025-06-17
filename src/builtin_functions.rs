@@ -1,7 +1,7 @@
 // builtin functions for the shell
 
 use crate::ext_commands::find_executable;
-
+pub mod redirect;
 use std::env;
 
 pub fn echo(args: &[String]) {

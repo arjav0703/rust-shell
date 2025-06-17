@@ -3,6 +3,10 @@ mod builtin_functions;
 pub mod ext_commands;
 
 fn main() {
+    run_loop();
+}
+
+fn run_loop() {
     let builtins = ["echo", "exit", "type", "pwd"];
 
     let stdin = io::stdin();
@@ -32,7 +36,8 @@ fn main() {
             "pwd" => builtin_functions::pwd(),
             "cd" => builtin_functions::cd(&args),
             other => {
-                ext_commands::execute_cmd(other, &args);
+                //ext_commands::execute_cmd(other, &args);
+                let _ = builtin_functions::redirect::run_with_redirection(other, &args);
             }
         }
     }

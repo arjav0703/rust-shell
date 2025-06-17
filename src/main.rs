@@ -39,13 +39,14 @@ fn main() {
     }
 }
 
-/// Splits the raw input line into the command name and a Vec of its arguments.
+/// Splits the raw input line into the command name and a Vec of its arguments
 fn parse_cmd_and_args(input: &str) -> (String, Vec<String>) {
-    let parts: Vec<String> = input.split_whitespace().map(|s| s.to_string()).collect();
+    let mut parts = shlex::split(input).unwrap_or_default();
 
-    let cmd = parts.get(0).cloned().unwrap_or_default();
+    let cmd = parts.first().cloned().unwrap_or_default();
+
     let args = if parts.len() > 1 {
-        parts[1..].to_vec()
+        parts.split_off(1)
     } else {
         Vec::new()
     };

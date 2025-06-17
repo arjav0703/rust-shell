@@ -119,5 +119,7 @@ fn execute_external(cmd: &str, args: &[String]) {
         if let Err(e) = child.wait() {
             eprintln!("{}: failed while waiting: {}", cmd, e);
         }
+    } else {
+        eprintln!("{}: command not found", cmd);
     }
 }

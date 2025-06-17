@@ -31,6 +31,7 @@ fn main() {
                 builtin_type(target, &builtins)
             }
             "pwd" => builtin_pwd(),
+            "cd" => builtin_cd(&args),
             other => {
                 execute_external(other, &args);
             }
@@ -74,6 +75,18 @@ fn builtin_pwd() {
     match env::current_dir() {
         Ok(path) => println!("{}", path.display()),
         Err(e) => eprintln!("pwd: {}", e),
+    }
+}
+
+fn builtin_cd(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("cd: missing argument");
+        return;
+    }
+
+    let target = &args[0];
+    if let Err(e) = env::set_current_dir(target) {
+        eprintln!("cd: {}: {}", target, e);
     }
 }
 

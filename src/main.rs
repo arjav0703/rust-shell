@@ -61,11 +61,18 @@ fn type_builtin(arg: &str, builtins: &[&str]) {
 }
 
 fn get_full_path(command: &str) -> Option<String> {
-    if let Ok(path) = env::var("PATH") {
-        for dir in path.split(':') {
-            let full_path = Path::new(dir).join(command);
-            if full_path.exists() {
-                return Some(full_path.to_string_lossy().to_string());
+    let current_dir = env::current_dir().ok()?;
+    let local = current_dir.join(command);
+
+    if local.exists() {
+        return Some(local.to_string_lossy().into_owned());
+    }
+
+    if let Ok(path_var) = env::var("PATH") {
+        for dir in path_var.split(':') {
+            let candidate = Path::new(dir).join(command);
+            if candidate.exists() {
+                return Some(candidate.to_string_lossy().into_owned());
             }
         }
     }

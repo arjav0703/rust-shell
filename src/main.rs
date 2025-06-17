@@ -7,6 +7,7 @@ fn main() {
     let builtins = ["echo", "exit", "type"];
 
     let stdin = io::stdin();
+
     loop {
         print!("$ ");
         io::stdout().flush().unwrap();

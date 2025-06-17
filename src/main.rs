@@ -1,6 +1,7 @@
 use std::env;
 use std::io::{self, Write};
 use std::path::Path;
+use std::process::Command;
 
 fn main() {
     let builtins = ["echo", "exit", "type"];
@@ -18,18 +19,18 @@ fn main() {
             continue;
         }
 
-        let (command, args) = eval(input);
+        let (command, args) = get_cmd_args(input);
 
         match command.as_str() {
             "exit" => break,
-            "echo" => echo(args),
-            "type" => type_fn(args.first().map_or("", String::as_str), &builtins),
-            command => println!("{}: command not found", command),
+            "echo" => echo_builtin(args),
+            "type" => type_builtin(args.first().map_or("", String::as_str), &builtins),
+            command => execute_external(command, args),
         }
     }
 }
 
-fn eval(input: &str) -> (String, Vec<String>) {
+fn get_cmd_args(input: &str) -> (String, Vec<String>) {
     let input_map = input
         .split_whitespace()
         .map(|s| s.to_string())
@@ -41,7 +42,7 @@ fn eval(input: &str) -> (String, Vec<String>) {
     (command, args)
 }
 
-fn echo(args: Vec<String>) {
+fn echo_builtin(args: Vec<String>) {
     if args.is_empty() {
         println!();
     } else {
@@ -49,7 +50,7 @@ fn echo(args: Vec<String>) {
     }
 }
 
-fn type_fn(arg: &str, builtins: &[&str]) {
+fn type_builtin(arg: &str, builtins: &[&str]) {
     if builtins.contains(&arg) {
         println!("{} is a shell builtin", arg);
     } else if let Some(full_path) = get_full_path(arg) {
@@ -69,4 +70,23 @@ fn get_full_path(command: &str) -> Option<String> {
         }
     }
     None
+}
+
+fn execute_external(command: &str, args: Vec<String>) {
+    if let Some(full_path) = get_full_path(command) {
+        let mut cmd = Command::new(full_path);
+
+        cmd.args(args);
+
+        match cmd.status() {
+            Ok(status) => {
+                if !status.success() {
+                    eprintln!("{}: command failed with status {}", command, status);
+                }
+            }
+            Err(e) => eprintln!("{}: failed to execute command: {}", command, e),
+        }
+    } else {
+        println!("{}: command not found", command);
+    }
 }

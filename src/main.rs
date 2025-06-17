@@ -1,4 +1,6 @@
+use std::env;
 use std::io::{self, Write};
+use std::path::Path;
 
 fn main() {
     let builtins = ["echo", "exit", "type"];
@@ -47,10 +49,24 @@ fn echo(args: Vec<String>) {
     }
 }
 
-fn type_fn(input: &str, builtins: &[&str]) {
-    if builtins.contains(&input) {
-        println!("{} is a shell builtin", input);
+fn type_fn(arg: &str, builtins: &[&str]) {
+    if builtins.contains(&arg) {
+        println!("{} is a shell builtin", arg);
+    } else if let Some(full_path) = get_full_path(arg) {
+        println!("{} is {}", arg, full_path);
     } else {
-        println!("{}: not found", input);
+        println!("{}: not found", arg);
     }
+}
+
+fn get_full_path(command: &str) -> Option<String> {
+    if let Ok(path) = env::var("PATH") {
+        for dir in path.split(':') {
+            let full_path = Path::new(dir).join(command);
+            if full_path.exists() {
+                return Some(full_path.to_string_lossy().to_string());
+            }
+        }
+    }
+    None
 }

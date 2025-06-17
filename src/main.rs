@@ -85,8 +85,8 @@ fn builtin_cd(args: &[String]) {
     }
 
     let target = &args[0];
-    if let Err(e) = env::set_current_dir(target) {
-        eprintln!("cd: {}: {}", target, e);
+    if env::set_current_dir(target).is_err() {
+        eprintln!("cd: {}: No such file or directory", target);
     }
 }
 

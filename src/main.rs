@@ -19,6 +19,7 @@ fn main() {
         match command.as_str() {
             "exit" => break,
             "echo" => echo(args),
+            "type" => type_fn(args.first().map_or("", String::as_str)),
             command => println!("{}: command not found", command),
         }
     }
@@ -41,5 +42,13 @@ fn echo(args: Vec<String>) {
         println!();
     } else {
         println!("{}", args.join(" "));
+    }
+}
+
+fn type_fn(input: &str) {
+    match input {
+        "echo" => println!("echo is a shell builtin"),
+        "exit" => println!("exit is a shell builtin"),
+        _ => println!("{}: not found", input),
     }
 }

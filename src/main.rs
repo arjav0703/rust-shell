@@ -85,6 +85,17 @@ fn builtin_cd(args: &[String]) {
     }
 
     let target = &args[0];
+
+    if target == "~" {
+        if let Some(home) = env::var_os("HOME") {
+            if env::set_current_dir(home).is_err() {
+                eprintln!("cd: failed to change to home directory");
+            }
+        } else {
+            eprintln!("cd: HOME not set");
+        }
+        return;
+    }
     if env::set_current_dir(target).is_err() {
         eprintln!("cd: {}: No such file or directory", target);
     }

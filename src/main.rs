@@ -4,7 +4,7 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 
 fn main() {
-    let builtins = ["echo", "exit", "type"];
+    let builtins = ["echo", "exit", "type", "pwd"];
 
     let stdin = io::stdin();
 
@@ -30,6 +30,7 @@ fn main() {
                 let target = args.get(0).map(|s| s.as_str()).unwrap_or("");
                 builtin_type(target, &builtins)
             }
+            "pwd" => builtin_pwd(),
             other => {
                 execute_external(other, &args);
             }
@@ -66,6 +67,13 @@ fn builtin_type(name: &str, builtins: &[&str]) {
         println!("{} is {}", name, path.display());
     } else {
         println!("{}: not found", name);
+    }
+}
+
+fn builtin_pwd() {
+    match env::current_dir() {
+        Ok(path) => println!("{}", path.display()),
+        Err(e) => eprintln!("pwd: {}", e),
     }
 }
 

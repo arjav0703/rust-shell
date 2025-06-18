@@ -1,4 +1,4 @@
-use crate::ext_commands::execute_cmd;
+use crate::funcs::matcher_ext;
 use std::fs::File;
 use std::process::{Command, Stdio};
 
@@ -11,7 +11,7 @@ use std::process::{Command, Stdio};
 /// let args = vec!["hello".into(), ">".into(), "out.txt".into()];
 /// let status = run_with_redirection(cmd, &args)?;
 /// assert!(status.success());
-pub fn run_with_redirection(cmd: &str, args: &[String]) {
+pub fn run_with_redirection(cmd: &str, args: &[String], builtins: &[&str]) {
     // Look for a ">" in args
     if let Some(pos) = args.iter().position(|s| s == ">") {
         // Ensure there is a file name after ">"
@@ -36,6 +36,6 @@ pub fn run_with_redirection(cmd: &str, args: &[String]) {
 
         std::mem::drop(child);
     } else {
-        execute_cmd(cmd, args);
+        matcher_ext(args.to_vec(), cmd.to_string(), builtins);
     }
 }

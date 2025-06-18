@@ -1,7 +1,7 @@
 use std::io::{self, Write};
-mod builtin_functions;
+pub mod builtin_functions;
 pub mod ext_commands;
-
+pub mod funcs;
 fn main() {
     run_loop();
 }
@@ -26,20 +26,7 @@ fn run_loop() {
 
         let (cmd, args) = parse_cmd_and_args(input);
 
-        match cmd.as_str() {
-            "exit" => break,
-            "echo" => builtin_functions::echo(&args),
-            "type" => {
-                let target = args.first().map(|s| s.as_str()).unwrap_or("");
-                builtin_functions::get_type(target, &builtins)
-            }
-            "pwd" => builtin_functions::pwd(),
-            "cd" => builtin_functions::cd(&args),
-            other => {
-                //ext_commands::execute_cmd(other, &args);
-                let _ = builtin_functions::redirect::run_with_redirection(other, &args);
-            }
-        }
+        funcs::matcher_redirect(args, cmd, &builtins);
     }
 }
 

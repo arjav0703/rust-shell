@@ -65,19 +65,14 @@ pub fn execute_cmd(cmd: &str, args: &[String], file_path: Option<String>) {
     }
 
     match file_path {
-        // If the user asked for redirection, we capture stdout in-memory
         Some(path) => {
-            // Run to completion, capturing stdout/stderr
             match Command::new(cmd)
                 .args(args)
-                .stdin(Stdio::inherit()) // still pipe through your terminal’s stdin
-                .stderr(Stdio::inherit()) // errors still go to your terminal
+                .stdin(Stdio::inherit())
+                .stderr(Stdio::inherit())
                 .output()
             {
                 Ok(output) => {
-                    if !output.status.success() {
-                        eprintln!("{} exited with code {:?}", cmd, output.status.code());
-                    }
                     write_to_file(&path, &String::from_utf8_lossy(&output.stdout));
                 }
                 Err(e) => {
@@ -86,7 +81,6 @@ pub fn execute_cmd(cmd: &str, args: &[String], file_path: Option<String>) {
             }
         }
 
-        // No file redirection requested → inherit stdout/stderr
         None => {
             match Command::new(cmd)
                 .args(args)

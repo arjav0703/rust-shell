@@ -43,13 +43,17 @@ pub fn matcher_ext(args: Vec<String>, cmd: String, builtins: &[&str], file_path:
 }
 
 pub fn write_to_file(file_path: &str, content: &str) {
-    // Create parent directories if they don't exist
-
+    // Create parent dirs
     if let Some(parent) = std::path::Path::new(file_path).parent() {
         let _ = std::fs::create_dir_all(parent);
     }
 
-    match std::fs::write(file_path, content.to_string() + "\n") {
+    let mut out = content.to_string();
+    if !out.ends_with('\n') {
+        out.push('\n');
+    }
+
+    match std::fs::write(file_path, out) {
         Ok(_) => {}
         Err(e) => eprintln!("Error writing to file: {}", e),
     }

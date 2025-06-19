@@ -10,7 +10,7 @@ pub fn echo(args: &[String], file_path: Option<String>) {
         let content = args.join(" ").to_string();
         write_to_file(&path, &content);
     } else {
-        println!("{}", args.join(" "));
+        println!("{} ", args.join(" "));
     }
 }
 

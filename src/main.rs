@@ -1,4 +1,3 @@
-use std::io::{self, Write};
 mod autocomplete;
 use autocomplete::MyHelper;
 use rustyline::Editor;
@@ -22,6 +21,7 @@ fn run_loop() {
         if input.is_empty() {
             continue;
         }
+
         let (args, file_path) = funcs::parse_redirection(input);
         //dbg!("Parsed input: {} {}", &args, &file_path);
         let (cmd, arg) = parse_cmd_and_args(args);

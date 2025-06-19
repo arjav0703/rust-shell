@@ -1,4 +1,7 @@
 use std::io::{self, Write};
+mod autocomplete;
+use autocomplete::MyHelper;
+use rustyline::Editor;
 pub mod builtin_functions;
 pub mod ext_commands;
 pub mod funcs;
@@ -9,16 +12,12 @@ fn main() {
 fn run_loop() {
     let builtins = ["echo", "exit", "type", "pwd"];
 
-    let stdin = io::stdin();
+    let mut rl = Editor::new().unwrap();
+    rl.set_helper(Some(MyHelper));
 
     loop {
-        print!("$ ");
-        io::stdout().flush().unwrap();
+        let input = rl.readline("$ ").unwrap();
 
-        let mut input = String::new();
-        if stdin.read_line(&mut input).is_err() {
-            continue;
-        }
         let input = input.trim();
         if input.is_empty() {
             continue;

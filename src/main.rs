@@ -27,7 +27,7 @@ fn run_loop() {
         //dbg!("Parsed input: {} {}", &args, &file_path);
         let (cmd, arg) = parse_cmd_and_args(args);
 
-        funcs::matcher_ext(arg, cmd, &builtins);
+        funcs::matcher_ext(arg, cmd, &builtins, file_path);
     }
 }
 

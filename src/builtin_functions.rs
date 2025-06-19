@@ -1,12 +1,14 @@
 // builtin functions for the shell
 
 use crate::ext_commands::find_executable;
-pub mod redirect;
+use crate::funcs::write_to_file;
 use std::env;
 
-pub fn echo(args: &[String]) {
+pub fn echo(args: &[String], file_path: Option<String>) {
     if args.is_empty() {
-        println!();
+    } else if let Some(path) = file_path {
+        let content = args.join(" ").to_string();
+        write_to_file(&path, &content);
     } else {
         println!("{}", args.join(" "));
     }

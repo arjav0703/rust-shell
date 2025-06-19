@@ -23,12 +23,12 @@ pub fn parse_redirection(input: &str) -> (String, Option<String>) {
     (input.to_string(), None)
 }
 
-pub fn matcher_ext(args: Vec<String>, cmd: String, builtins: &[&str]) {
+pub fn matcher_ext(args: Vec<String>, cmd: String, builtins: &[&str], file_path: Option<String>) {
     match cmd.as_str() {
         "exit" => {
             std::process::exit(0);
         }
-        "echo" => builtin_functions::echo(&args),
+        "echo" => builtin_functions::echo(&args, file_path),
         "type" => {
             let target = args.first().map(|s| s.as_str()).unwrap_or("");
             builtin_functions::get_type(target, builtins)
@@ -36,8 +36,21 @@ pub fn matcher_ext(args: Vec<String>, cmd: String, builtins: &[&str]) {
         "pwd" => builtin_functions::pwd(),
         "cd" => builtin_functions::cd(&args),
         other => {
-            ext_commands::execute_cmd(other, &args);
+            ext_commands::execute_cmd(other, &args, file_path);
             //builtin_functions::redirect::run_with_redirection(other, &args, builtins);
         }
+    }
+}
+
+pub fn write_to_file(file_path: &str, content: &str) {
+    // Create parent directories if they don't exist
+
+    if let Some(parent) = std::path::Path::new(file_path).parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+
+    match std::fs::write(file_path, content.to_string() + "\n") {
+        Ok(_) => {}
+        Err(e) => eprintln!("Error writing to file: {}", e),
     }
 }

@@ -23,16 +23,17 @@ fn run_loop() {
         if input.is_empty() {
             continue;
         }
+        let (args, file_path) = funcs::parse_redirection(input);
+        //dbg!("Parsed input: {} {}", &args, &file_path);
+        let (cmd, arg) = parse_cmd_and_args(args);
 
-        let (cmd, args) = parse_cmd_and_args(input);
-
-        funcs::matcher_redirect(args, cmd, &builtins);
+        funcs::matcher_ext(arg, cmd, &builtins);
     }
 }
 
 /// Splits the raw input line into the command name and a Vec of its arguments
-fn parse_cmd_and_args(input: &str) -> (String, Vec<String>) {
-    let mut parts = shlex::split(input).unwrap_or_default();
+fn parse_cmd_and_args(input: String) -> (String, Vec<String>) {
+    let mut parts = shlex::split(&input).unwrap_or_default();
 
     let cmd = parts.first().cloned().unwrap_or_default();
 

@@ -39,7 +39,7 @@ pub fn matcher_ext(args: Vec<String>, cmd: String, builtins: &[&str], file_path:
         }
         "pwd" => builtin_functions::pwd(),
         "cd" => builtin_functions::cd(&args),
-        "history" => history.show(),
+        "history" => history.show_last(&args),
         "clear" => history.clear(),
         other => {
             ext_commands::execute_cmd(other, &args, file_path);

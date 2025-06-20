@@ -64,3 +64,18 @@ pub fn write_to_file(file_path: &str, content: &str) {
         Err(e) => eprintln!("Error writing to file: {}", e),
     }
 }
+
+/// Splits the raw input line into the command name and a Vec of its arguments
+pub fn parse_args(input: String) -> (String, Vec<String>) {
+    let mut parts = shlex::split(&input).unwrap_or_default();
+
+    let cmd = parts.first().cloned().unwrap_or_default();
+
+    let args = if parts.len() > 1 {
+        parts.split_off(1)
+    } else {
+        Vec::new()
+    };
+
+    (cmd, args)
+}

@@ -7,6 +7,8 @@ use rustyline::{Context, Helper};
 use std::fs;
 use std::path::Path;
 
+use crate::BUILTINS;
+
 pub struct ShellHelper;
 
 //impl Completer for MyHelper {
@@ -52,8 +54,7 @@ impl Completer for ShellHelper {
         let last_token = tokens.last().unwrap_or(&"");
 
         if tokens.len() <= 1 && pos <= before_cursor.trim_end().len() {
-            let builtins = vec!["echo", "exit", "type", "pwd", "cd", "history", "clear"];
-            for cmd in builtins {
+            for cmd in BUILTINS {
                 if cmd.starts_with(last_token) {
                     candidates.push(Pair {
                         display: format!("{} ", cmd),

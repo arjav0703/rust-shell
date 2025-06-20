@@ -4,7 +4,9 @@ use crate::ext_commands::find_executable;
 use crate::funcs::write_to_file;
 use std::env;
 use std::fs;
-
+use std::fs::OpenOptions;
+use std::io::Write;
+//
 pub fn echo(args: &[String], file_path: Option<String>) {
     if args.is_empty() {
     } else if let Some(path) = file_path {
@@ -67,11 +69,16 @@ impl History {
     }
 
     pub fn add(&self, cmd: &str, args: &[String]) {
-        fs::write(
-            self.history_file.clone(),
-            format!("{} {}\n", cmd, args.join(" ")),
-        )
-        .unwrap_or_else(|e| eprintln!("Error writing to history file: {}", e));
+        let line = format!("{} {}\n", cmd, args.join(" "));
+        let result = OpenOptions::new()
+            .create(true) // create file if it doesn’t exist
+            .append(true) // open in append mode
+            .open(&self.history_file)
+            .and_then(|mut file| file.write_all(line.as_bytes()));
+
+        if let Err(e) = result {
+            eprintln!("Error writing to history file: {}", e);
+        }
     }
 
     pub fn show(&self) {

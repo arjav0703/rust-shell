@@ -52,7 +52,7 @@ impl Completer for ShellHelper {
         let last_token = tokens.last().unwrap_or(&"");
 
         if tokens.len() <= 1 && pos <= before_cursor.trim_end().len() {
-            let builtins = vec!["echo", "exit", "type", "pwd", "cd"];
+            let builtins = vec!["echo", "exit", "type", "pwd", "cd", "history"];
             for cmd in builtins {
                 if cmd.starts_with(last_token) {
                     candidates.push(Pair {

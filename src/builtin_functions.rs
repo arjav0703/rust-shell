@@ -3,6 +3,7 @@
 use crate::ext_commands::find_executable;
 use crate::funcs::write_to_file;
 use std::env;
+use std::fs;
 
 pub fn echo(args: &[String], file_path: Option<String>) {
     if args.is_empty() {
@@ -51,5 +52,36 @@ pub fn cd(args: &[String]) {
     }
     if env::set_current_dir(target).is_err() {
         eprintln!("cd: {}: No such file or directory", target);
+    }
+}
+
+pub struct History {
+    history_file: String,
+}
+
+impl History {
+    pub fn new(filename: String) -> Self {
+        History {
+            history_file: filename,
+        }
+    }
+
+    pub fn add(&self, cmd: &str, args: &[String]) {
+        fs::write(
+            self.history_file.clone(),
+            format!("{} {}\n", cmd, args.join(" ")),
+        )
+        .unwrap_or_else(|e| eprintln!("Error writing to history file: {}", e));
+    }
+
+    pub fn show(&self) {
+        match fs::read_to_string(&self.history_file) {
+            Ok(content) => {
+                for line in content.lines() {
+                    println!("{}", line);
+                }
+            }
+            Err(e) => eprintln!("Error reading history file: {}", e),
+        }
     }
 }

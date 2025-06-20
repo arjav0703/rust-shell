@@ -9,7 +9,7 @@ fn main() {
 }
 
 fn run_loop() {
-    let builtins = ["echo", "exit", "type", "pwd"];
+    let builtins = ["echo", "exit", "type", "pwd", "history"];
 
     let mut rl = Editor::new().unwrap();
     rl.set_helper(Some(ShellHelper));

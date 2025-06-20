@@ -24,6 +24,9 @@ pub fn parse_redirection(input: &str) -> (String, Option<String>) {
 }
 
 pub fn matcher_ext(args: Vec<String>, cmd: String, builtins: &[&str], file_path: Option<String>) {
+    let history = builtin_functions::History::new(String::from(".shell_history"));
+    history.add(&cmd, &args);
+
     match cmd.as_str() {
         "exit" => {
             std::process::exit(0);
@@ -35,6 +38,7 @@ pub fn matcher_ext(args: Vec<String>, cmd: String, builtins: &[&str], file_path:
         }
         "pwd" => builtin_functions::pwd(),
         "cd" => builtin_functions::cd(&args),
+        "history" => history.show(),
         other => {
             ext_commands::execute_cmd(other, &args, file_path);
             //builtin_functions::redirect::run_with_redirection(other, &args, builtins);

@@ -1,5 +1,5 @@
 mod autocomplete;
-use autocomplete::MyHelper;
+use autocomplete::ShellHelper;
 use rustyline::Editor;
 pub mod builtin_functions;
 pub mod ext_commands;
@@ -12,7 +12,7 @@ fn run_loop() {
     let builtins = ["echo", "exit", "type", "pwd"];
 
     let mut rl = Editor::new().unwrap();
-    rl.set_helper(Some(MyHelper));
+    rl.set_helper(Some(ShellHelper));
 
     loop {
         let input = rl.readline("$ ").unwrap();

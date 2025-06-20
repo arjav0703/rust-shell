@@ -10,6 +10,7 @@ pub mod history;
 pub const BUILTINS: [&str; 7] = ["echo", "exit", "type", "pwd", "history", "clear", "cd"];
 
 fn main() {
+    std::fs::remove_file(".shell_hist").ok();
     run_loop();
 }
 

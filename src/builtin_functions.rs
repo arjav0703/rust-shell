@@ -33,23 +33,27 @@ pub fn pwd() {
 
 pub fn cd(args: &[String]) {
     if args.is_empty() {
-        eprintln!("cd: missing argument");
+        cd_home();
         return;
     }
 
     let target = &args[0];
 
     if target == "~" {
-        if let Some(home) = env::var_os("HOME") {
-            if env::set_current_dir(home).is_err() {
-                eprintln!("cd: failed to change to home directory");
-            }
-        } else {
-            eprintln!("cd: HOME not set");
-        }
+        cd_home();
         return;
     }
     if env::set_current_dir(target).is_err() {
         eprintln!("cd: {}: No such file or directory", target);
+    }
+}
+
+fn cd_home() {
+    if let Some(home) = env::var_os("HOME") {
+        if env::set_current_dir(home).is_err() {
+            eprintln!("cd: failed to change to home directory");
+        }
+    } else {
+        eprintln!("cd: HOME not set");
     }
 }

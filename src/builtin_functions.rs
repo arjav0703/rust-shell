@@ -93,4 +93,10 @@ impl History {
             Err(e) => eprintln!("Error reading history file: {}", e),
         }
     }
+
+    pub fn clear(&self) {
+        if fs::remove_file(&self.history_file).is_err() {
+            eprintln!("Error clearing history file");
+        }
+    }
 }

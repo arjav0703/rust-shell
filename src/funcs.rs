@@ -25,7 +25,7 @@ pub fn parse_redirection(input: &str) -> (String, Option<String>) {
 }
 
 pub fn matcher_ext(args: Vec<String>, cmd: String, builtins: &[&str], file_path: Option<String>) {
-    let history = History::new(String::from(".shell_history"));
+    let history = History::new(String::from(".shell_hist"));
     history.add(&cmd, &args);
 
     match cmd.as_str() {

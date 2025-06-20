@@ -43,7 +43,7 @@ impl History {
         let count = args
             .first()
             .and_then(|s| s.parse::<usize>().ok())
-            .unwrap_or(10);
+            .unwrap_or(100);
 
         let content = match fs::read_to_string(&self.history_file) {
             Ok(s) => s,
@@ -58,7 +58,7 @@ impl History {
         let start = if count >= total { 0 } else { total - count };
 
         for (idx, &line) in lines[start..].iter().enumerate() {
-            println!("  {}  {}", start + idx + 1, line);
+            println!("    {}  {}", start + idx + 1, line);
         }
     }
 

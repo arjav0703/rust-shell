@@ -1,3 +1,7 @@
+use std::fs;
+use std::fs::OpenOptions;
+use std::io::Write;
+
 pub struct History {
     history_file: String,
 }

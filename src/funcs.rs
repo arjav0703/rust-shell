@@ -1,5 +1,6 @@
 use crate::builtin_functions;
 use crate::ext_commands;
+use crate::history::History;
 
 pub fn parse_redirection(input: &str) -> (String, Option<String>) {
     // Look for redirection operators
@@ -24,7 +25,7 @@ pub fn parse_redirection(input: &str) -> (String, Option<String>) {
 }
 
 pub fn matcher_ext(args: Vec<String>, cmd: String, builtins: &[&str], file_path: Option<String>) {
-    let history = builtin_functions::History::new(String::from(".shell_history"));
+    let history = History::new(String::from(".shell_history"));
     history.add(&cmd, &args);
 
     match cmd.as_str() {

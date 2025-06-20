@@ -1,5 +1,4 @@
 use crate::funcs::write_to_file;
-/// Look in the current directory and then each entry in $PATH for an executable named `cmd`.
 use std::env;
 use std::path::Path;
 use std::process::{Command, Stdio};

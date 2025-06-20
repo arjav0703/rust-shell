@@ -4,6 +4,8 @@ use rustyline::Editor;
 pub mod builtin_functions;
 pub mod ext_commands;
 pub mod funcs;
+pub mod history;
+
 fn main() {
     run_loop();
 }

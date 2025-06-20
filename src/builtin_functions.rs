@@ -82,10 +82,12 @@ impl History {
     }
 
     pub fn show(&self) {
+        let mut counter = 1;
         match fs::read_to_string(&self.history_file) {
             Ok(content) => {
                 for line in content.lines() {
-                    println!("{}", line);
+                    counter += 1;
+                    println!("  {} {}", counter, line);
                 }
             }
             Err(e) => eprintln!("Error reading history file: {}", e),

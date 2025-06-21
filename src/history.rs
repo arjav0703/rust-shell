@@ -13,6 +13,7 @@ impl History {
         }
     }
 
+    /// Append a single command + args to the history file
     pub fn add(&self, cmd: &str, args: &[String]) {
         let line = format!("{} {}\n", cmd, args.join(" "));
         let result = OpenOptions::new()
@@ -22,33 +23,31 @@ impl History {
             .and_then(|mut file| file.write_all(line.as_bytes()));
 
         if let Err(e) = result {
-            eprintln!("Error writing to history file: {}", e);
+            eprintln!("Error writing to history file {}: {}", self.history_file, e);
         }
     }
 
-    //pub fn show(&self, number: usize) {
-    //    let mut counter = 1;
-    //    match fs::read_to_string(&self.history_file) {
-    //        Ok(content) => {
-    //            for line in content.lines() {
-    //                counter += 1;
-    //                println!("  {} {}", counter, line);
-    //            }
-    //        }
-    //        Err(e) => eprintln!("Error reading history file: {}", e),
-    //    }
-    //}
-
     pub fn show_last(&self, args: &[String]) {
-        let count = args
-            .first()
-            .and_then(|s| s.parse::<usize>().ok())
-            .unwrap_or(100);
+        let mut count = 100;
+        let mut read_from = &self.history_file;
 
+        // detect "-r" flag
+        if args.len() >= 2 && args[0] == "-r" {
+            read_from = &args[1];
+            if let Some(n) = args.get(2).and_then(|s| s.parse::<usize>().ok()) {
+                count = n;
+            }
+            self.append_from_file(read_from);
+            return;
+        } else if let Some(n) = args.first().and_then(|s| s.parse::<usize>().ok()) {
+            count = n;
+        }
+
+        // read the (possibly updated) history file
         let content = match fs::read_to_string(&self.history_file) {
             Ok(s) => s,
             Err(e) => {
-                eprintln!("Failed to read {:?}: {}", &self.history_file, e);
+                eprintln!("Failed to read {}: {}", &self.history_file, e);
                 return;
             }
         };
@@ -57,14 +56,36 @@ impl History {
         let total = lines.len();
         let start = if count >= total { 0 } else { total - count };
 
-        for (idx, &line) in lines[start..].iter().enumerate() {
-            println!("    {}  {}", start + idx + 1, line);
+        for (i, &line) in lines[start..].iter().enumerate() {
+            println!("{:5}  {}", start + i + 1, line);
         }
     }
 
+    /// Wipe out the history file entirely
     pub fn clear(&self) {
-        if fs::remove_file(&self.history_file).is_err() {
-            eprintln!("Error clearing history file");
+        if let Err(e) = fs::remove_file(&self.history_file) {
+            eprintln!("Error clearing history file {}: {}", &self.history_file, e);
+        }
+    }
+
+    fn append_from_file(&self, filename: &str) {
+        match fs::read_to_string(filename) {
+            Ok(contents) => {
+                let result = OpenOptions::new()
+                    .create(true)
+                    .append(true)
+                    .open(&self.history_file)
+                    .and_then(|mut f| f.write_all(contents.as_bytes()));
+                if let Err(e) = result {
+                    eprintln!(
+                        "Error appending {} to {}: {}",
+                        filename, self.history_file, e
+                    );
+                }
+            }
+            Err(e) => {
+                eprintln!("Failed to read {}: {}", filename, e);
+            }
         }
     }
 }

@@ -16,3 +16,7 @@ impl Cli {
         &self.history_file
     }
 }
+
+pub fn get_history_file() -> String {
+    Cli::new().get_history_file().to_string()
+}

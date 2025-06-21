@@ -18,7 +18,6 @@ fn main() {
 fn run_loop() {
     let cli = Cli::new();
     let history_file = cli.get_history_file();
-    dbg!("Using history file: {}", history_file);
 
     std::fs::remove_file(history_file).ok();
 
@@ -39,6 +38,6 @@ fn run_loop() {
         //dbg!("Parsed input: {} {}", &args, &file_path);
         let (cmd, arg) = parse_args(args);
 
-        funcs::matcher_ext(arg, cmd, &BUILTINS, file_path, &history_file);
+        funcs::matcher_ext(arg, cmd, &BUILTINS, file_path, history_file);
     }
 }

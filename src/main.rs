@@ -6,7 +6,7 @@ pub mod builtin_functions;
 pub mod ext_commands;
 pub mod funcs;
 pub mod history;
-
+//
 pub const BUILTINS: [&str; 7] = ["echo", "exit", "type", "pwd", "history", "clear", "cd"];
 
 fn main() {
@@ -18,9 +18,13 @@ fn run_loop() {
     let mut rl = Editor::new().unwrap();
     rl.set_helper(Some(ShellHelper));
 
+    let histfile = ".shell_hist";
+
+    let _ = rl.load_history(&histfile);
+
     loop {
         let input = rl.readline("$ ").unwrap();
-
+        rl.add_history_entry(input.as_str()).unwrap();
         let input = input.trim();
         if input.is_empty() {
             continue;

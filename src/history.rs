@@ -46,6 +46,13 @@ impl History {
                 eprintln!("Usage: history -w <filename>");
             }
             return;
+        } else if args.len() >= 2 && args[0] == "-a" {
+            if let Some(filename) = args.get(1) {
+                self.appent_to_file(filename);
+            } else {
+                eprintln!("Usage: history -a <filename>");
+            }
+            return;
         } else if let Some(n) = args.first().and_then(|s| s.parse::<usize>().ok()) {
             count = n;
         }
@@ -82,6 +89,27 @@ impl History {
                     .create(true)
                     .append(true)
                     .open(&self.history_file)
+                    .and_then(|mut f| f.write_all(contents.as_bytes()));
+                if let Err(e) = result {
+                    eprintln!(
+                        "Error appending {} to {}: {}",
+                        filename, self.history_file, e
+                    );
+                }
+            }
+            Err(e) => {
+                eprintln!("Failed to read {}: {}", filename, e);
+            }
+        }
+    }
+
+    fn appent_to_file(&self, filename: &str) {
+        match fs::read_to_string(filename) {
+            Ok(contents) => {
+                let result = OpenOptions::new()
+                    .create(true)
+                    .append(true)
+                    .open(filename)
                     .and_then(|mut f| f.write_all(contents.as_bytes()));
                 if let Err(e) = result {
                     eprintln!(

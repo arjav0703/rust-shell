@@ -34,10 +34,17 @@ impl History {
         // detect "-r" flag
         if args.len() >= 2 && args[0] == "-r" {
             read_from = &args[1];
-            if let Some(n) = args.get(2).and_then(|s| s.parse::<usize>().ok()) {
-                count = n;
+            if let Some(_n) = args.get(2).and_then(|s| s.parse::<usize>().ok()) {
+                return;
             }
             self.append_from_file(read_from);
+            return;
+        } else if args.len() >= 2 && args[0] == "-w" {
+            if let Some(filename) = args.get(1) {
+                self.write_to_file(filename);
+            } else {
+                eprintln!("Usage: history -w <filename>");
+            }
             return;
         } else if let Some(n) = args.first().and_then(|s| s.parse::<usize>().ok()) {
             count = n;
@@ -87,5 +94,19 @@ impl History {
                 eprintln!("Failed to read {}: {}", filename, e);
             }
         }
+    }
+
+    fn write_to_file(&self, filename: &str) {
+        let content = match fs::read_to_string(&self.history_file) {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("Failed to read {}: {}", &self.history_file, e);
+                return;
+            }
+        };
+
+        fs::write(filename, content).unwrap_or_else(|e| {
+            eprintln!("Error writing to file {}: {}", filename, e);
+        });
     }
 }

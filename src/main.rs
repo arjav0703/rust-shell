@@ -3,24 +3,29 @@ use autocomplete::ShellHelper;
 use funcs::parse_args;
 use rustyline::Editor;
 pub mod builtin_functions;
+mod cli;
+use cli::Cli;
 pub mod ext_commands;
 pub mod funcs;
 pub mod history;
-//
+
 pub const BUILTINS: [&str; 7] = ["echo", "exit", "type", "pwd", "history", "clear", "cd"];
 
 fn main() {
-    std::fs::remove_file(".shell_hist").ok();
     run_loop();
 }
 
 fn run_loop() {
+    let cli = Cli::new();
+    let history_file = cli.get_history_file();
+    dbg!("Using history file: {}", history_file);
+
+    std::fs::remove_file(history_file).ok();
+
     let mut rl = Editor::new().unwrap();
     rl.set_helper(Some(ShellHelper));
 
-    let histfile = ".shell_hist";
-
-    let _ = rl.load_history(&histfile);
+    let _ = rl.load_history(&history_file);
 
     loop {
         let input = rl.readline("$ ").unwrap();
@@ -34,6 +39,6 @@ fn run_loop() {
         //dbg!("Parsed input: {} {}", &args, &file_path);
         let (cmd, arg) = parse_args(args);
 
-        funcs::matcher_ext(arg, cmd, &BUILTINS, file_path);
+        funcs::matcher_ext(arg, cmd, &BUILTINS, file_path, &history_file);
     }
 }

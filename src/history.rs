@@ -259,7 +259,6 @@ pub fn history_handler(
             eprintln!("Error appending history to {}: {}", file, err);
         }
         strip_version_header(file).expect("strip failed");
-        strip_version_header(file_path.as_deref().unwrap_or(default_path)).expect("strip failed");
         return;
     }
 
@@ -272,6 +271,7 @@ pub fn history_handler(
     if let Err(err) = rl.save_history(default_path) {
         eprintln!("Error saving default history: {}", err);
     }
+    strip_version_header(default_path).expect("strip failed");
 
     let content = match fs::read_to_string(default_path) {
         Ok(s) => s,

@@ -221,9 +221,9 @@ pub fn history_handler(
         let file = &args[1];
         match fs::read_to_string(file) {
             Ok(content) => {
-                for (i, line) in content.lines().enumerate() {
-                    println!("{:5}  {}", i + 1, line);
-                }
+                //for (i, line) in content.lines().enumerate() {
+                //    println!("{:5}  {}", i + 1, line);
+                //}
             }
             Err(e) => eprintln!("Failed to read {}: {}", file, e),
         }
@@ -242,18 +242,11 @@ pub fn history_handler(
         if let Err(err) = rl.save_history(file) {
             eprintln!("Error writing history to {}: {}", file, err);
         }
-        strip_version_header(file).expect("strip failed");
         return;
     }
 
     if args.first().map(|s| s.as_str()) == Some("-a") {
         let file = &args[1];
-
-        if Path::new(file).exists() {
-            if let Err(err) = rl.load_history(file) {
-                eprintln!("Warning: couldn't load history {}: {}", file, err);
-            }
-        }
 
         if let Err(err) = rl.append_history(file) {
             eprintln!("Error appending history to {}: {}", file, err);
@@ -292,11 +285,16 @@ pub fn history_handler(
 
 fn strip_version_header(path: &str) -> io::Result<()> {
     let data = fs::read_to_string(path)?;
-    let mut lines = data.lines();
-    lines.next();
-    let mut f = fs::File::create(path)?;
-    for line in lines {
-        writeln!(f, "{}", line)?;
+    let mut lines: Vec<&str> = data.lines().collect();
+
+    if lines.first().map_or(false, |&l| l.trim() == "#V2") {
+        lines.remove(0);
+
+        let mut file = fs::File::create(path)?;
+        for line in lines {
+            writeln!(file, "{}", line)?;
+        }
     }
+
     Ok(())
 }

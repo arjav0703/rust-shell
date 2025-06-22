@@ -19,7 +19,7 @@ fn run_loop() {
     let cli = Cli::new();
     let history_file = cli.get_history_file();
 
-    std::fs::remove_file(history_file).ok();
+    //std::fs::remove_file(history_file).ok();
 
     let mut rl = Editor::new().unwrap();
     rl.set_helper(Some(ShellHelper));

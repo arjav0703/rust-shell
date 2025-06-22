@@ -19,8 +19,6 @@ pub fn parse_redirection(input: &str) -> (String, Option<String>) {
         return (cmd_part.to_string(), Some(file_path.to_string()));
     }
 
-    // No redirection found
-
     (input.to_string(), None)
 }
 
@@ -31,7 +29,7 @@ pub fn matcher_ext(
     file_path: Option<String>,
     history_file: &str,
 ) {
-    let history = History::new(String::from(history_file));
+    let mut history = History::new(String::from(history_file));
     history.add(&cmd, &args);
 
     match cmd.as_str() {

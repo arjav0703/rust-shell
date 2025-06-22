@@ -1,24 +1,38 @@
-use std::fs;
-use std::fs::OpenOptions;
+use std::fs::{self, OpenOptions};
 use std::io::Write;
+use std::path::Path;
+
+use crate::history;
 
 pub struct History {
     history_file: String,
+    buffer: Vec<String>,
+    session_start_len: usize,
 }
 
 impl History {
+    /// Load existing history into memory
     pub fn new(filename: String) -> Self {
+        let contents = fs::read_to_string(&filename).unwrap_or_default();
+        let buffer = contents.lines().map(|s| s.to_string()).collect::<Vec<_>>();
+        let session_start_len = buffer.len();
+
         History {
             history_file: filename,
+            buffer,
+            session_start_len,
         }
     }
-
-    /// Append a single command + args to the history file
     pub fn add(&self, cmd: &str, args: &[String]) {
-        let line = format!("{} {}\n", cmd, args.join(" "));
+        let line = if args.is_empty() {
+            format!("{}\n", cmd)
+        } else {
+            format!("{} {}\n", cmd, args.join(" "))
+        };
+
         let result = OpenOptions::new()
-            .create(true) // create file if it doesn’t exist
-            .append(true) // open in append mode
+            .create(true)
+            .append(true)
             .open(&self.history_file)
             .and_then(|mut file| file.write_all(line.as_bytes()));
 
@@ -48,7 +62,7 @@ impl History {
             return;
         } else if args.len() >= 2 && args[0] == "-a" {
             if let Some(filename) = args.get(1) {
-                self.appent_to_file(filename);
+                self.append_to_file(filename);
             } else {
                 eprintln!("Usage: history -a <filename>");
             }
@@ -103,26 +117,24 @@ impl History {
         }
     }
 
-    fn appent_to_file(&self, filename: &str) {
-        match fs::read_to_string(&self.history_file) {
-            Ok(contents) => {
-                let result = OpenOptions::new()
-                    .create(true)
-                    .append(true)
-                    .open(filename)
-                    .and_then(|mut f| f.write_all(contents.as_bytes()));
-                if let Err(e) = result {
-                    eprintln!(
-                        "Error appending {} to {}: {}",
-                        filename, self.history_file, e
-                    );
-                }
-            }
+    pub fn append_to_file(&self, target: &str) {
+        if self.buffer.len() <= self.session_start_len {
+            return;
+        }
+        let mut file = match OpenOptions::new().create(true).append(true).open(target) {
+            Ok(f) => f,
             Err(e) => {
-                eprintln!("Failed to read {}: {}", filename, e);
+                eprintln!("Error opening {}: {}", target, e);
+                return;
+            }
+        };
+
+        for line in &self.buffer[self.session_start_len..] {
+            if let Err(e) = writeln!(file, "{}", line) {
+                eprintln!("Error writing to {}: {}", target, e);
+                return;
             }
         }
-        self.clear();
     }
 
     fn write_to_file(&self, filename: &str) {

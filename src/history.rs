@@ -2,6 +2,7 @@ use crate::ShellHelper;
 use rustyline::Editor;
 use std::fs::{self, OpenOptions};
 use std::io::{self, Write};
+use std::path::Path;
 
 //pub struct History {
 //    history_file: String,
@@ -152,44 +153,130 @@ use std::io::{self, Write};
 //    }
 //}
 
+//pub fn history_handler(
+//    rl: &mut Editor<ShellHelper, rustyline::history::DefaultHistory>,
+//    file_path: Option<String>,
+//    args: &[String],
+//) {
+//    let mut count = 100;
+//    let def_path = ".shell_default_history";
+//    rl.save_history(def_path)
+//        .unwrap_or_else(|e| eprintln!("Error saving history: {}", e));
+//    strip_version_header(def_path).unwrap_or_else(|e| eprintln!("strip header: {}", e));
+//
+//    // detect "-r" flag
+//    if args.len() >= 2 && args[0] == "-r" {
+//        fs::read_to_string(&args[1])
+//            .map(|content| {
+//                let lines: Vec<&str> = content.lines().collect();
+//                for (i, line) in lines.iter().enumerate() {
+//                    println!("{:5}  {}", i + 1, line);
+//                }
+//            })
+//            .unwrap_or_else(|e| eprintln!("Failed to read {}: {}", args[1], e));
+//    } else if args.len() >= 2 && args[0] == "-w" {
+//        rl.append_history(&args[1])
+//            .unwrap_or_else(|e| eprintln!("Error saving history to {}: {}", args[1], e));
+//
+//        return;
+//    } else if args.len() >= 2 && args[0] == "-a" {
+//        let path = &args[1];
+//        match rl.append_history(path) {
+//            Ok(()) => {}
+//            Err(err) => {
+//                eprintln!("Error appending history to {}: {}", path, err);
+//            }
+//        }
+//        return;
+//    } else if let Some(n) = args.first().and_then(|s| s.parse::<usize>().ok()) {
+//        count = n;
+//    }
+//
+//    let content = match fs::read_to_string(file_path.as_deref().unwrap_or(def_path)) {
+//        Ok(s) => s,
+//        Err(e) => {
+//            eprintln!("Failed to read {}: {}", def_path, e);
+//            return;
+//        }
+//    };
+//
+//    let lines: Vec<&str> = content.lines().collect();
+//    let total = lines.len();
+//    let start = if count >= total { 0 } else { total - count };
+//
+//    for (i, &line) in lines[start..].iter().enumerate() {
+//        println!("{:5}  {}", start + i + 1, line);
+//    }
+//}
+
 pub fn history_handler(
     rl: &mut Editor<ShellHelper, rustyline::history::DefaultHistory>,
     file_path: Option<String>,
     args: &[String],
 ) {
-    let mut count = 100;
-    let def_path = ".shell_default_history";
-    rl.save_history(def_path)
-        .unwrap_or_else(|e| eprintln!("Error saving history: {}", e));
-    strip_version_header(def_path).unwrap_or_else(|e| eprintln!("strip header: {}", e));
+    let default_path = ".shell_default_history";
 
-    // detect "-r" flag
-    if args.len() >= 2 && args[0] == "-r" {
-        fs::read_to_string(&args[1])
-            .map(|content| {
-                let lines: Vec<&str> = content.lines().collect();
-                for (i, line) in lines.iter().enumerate() {
+    // If the user wants to read (-r) we just dump the file
+    if args.first().map(|s| s.as_str()) == Some("-r") {
+        let file = &args[1];
+        match fs::read_to_string(file) {
+            Ok(content) => {
+                for (i, line) in content.lines().enumerate() {
                     println!("{:5}  {}", i + 1, line);
                 }
-            })
-            .unwrap_or_else(|e| eprintln!("Failed to read {}: {}", args[1], e));
-    } else if args.len() >= 2 && args[0] == "-w" {
-        rl.save_history(&args[1])
-            .unwrap_or_else(|e| eprintln!("Error saving history to {}: {}", args[1], e));
-
+            }
+            Err(e) => eprintln!("Failed to read {}: {}", file, e),
+        }
         return;
-    } else if args.len() >= 2 && args[0] == "-a" {
-        rl.append_history(args[1].as_str())
-            .unwrap_or_else(|e| eprintln!("Error appending history to {}: {}", args[1], e));
-        return;
-    } else if let Some(n) = args.first().and_then(|s| s.parse::<usize>().ok()) {
-        count = n;
     }
 
-    let content = match fs::read_to_string(def_path) {
+    if args.first().map(|s| s.as_str()) == Some("-w") {
+        let file = &args[1];
+
+        if Path::new(file).exists() {
+            if let Err(err) = rl.load_history(file) {
+                eprintln!("Warning: couldn't load history {}: {}", file, err);
+            }
+        }
+
+        if let Err(err) = rl.save_history(file) {
+            eprintln!("Error writing history to {}: {}", file, err);
+        }
+        strip_version_header(file).expect("strip failed");
+        return;
+    }
+
+    if args.first().map(|s| s.as_str()) == Some("-a") {
+        let file = &args[1];
+
+        if Path::new(file).exists() {
+            if let Err(err) = rl.load_history(file) {
+                eprintln!("Warning: couldn't load history {}: {}", file, err);
+            }
+        }
+
+        if let Err(err) = rl.append_history(file) {
+            eprintln!("Error appending history to {}: {}", file, err);
+        }
+        strip_version_header(file).expect("strip failed");
+        strip_version_header(file_path.as_deref().unwrap_or(default_path)).expect("strip failed");
+        return;
+    }
+
+    let mut count = args
+        .first()
+        .and_then(|s| s.parse::<usize>().ok())
+        .unwrap_or(100);
+
+    // a later run of `history -r` sees everything.
+    if let Err(err) = rl.save_history(default_path) {
+        eprintln!("Error saving default history: {}", err);
+    }
+
+    let content = match fs::read_to_string(default_path) {
         Ok(s) => s,
         Err(e) => {
-            eprintln!("Failed to read {}: {}", def_path, e);
+            eprintln!("Failed to read {}: {}", default_path, e);
             return;
         }
     };

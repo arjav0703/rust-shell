@@ -242,6 +242,8 @@ pub fn history_handler(
         if let Err(err) = rl.save_history(file) {
             eprintln!("Error writing history to {}: {}", file, err);
         }
+        strip_version_header(file).expect("strip failed");
+
         return;
     }
 

@@ -51,7 +51,7 @@ pub fn matcher_ext(
         }
         "pwd" => builtin_functions::pwd(),
         "cd" => builtin_functions::cd(&args),
-        "history" => history_handler(rl, file_path, &args),
+        "history" => history_handler(rl, history_file, &args),
         "clear" => rl.clear_history().unwrap_or_else(|e| {
             eprintln!("Error clearing history: {}", e);
         }),

@@ -211,7 +211,7 @@ use std::path::Path;
 
 pub fn history_handler(
     rl: &mut Editor<ShellHelper, rustyline::history::DefaultHistory>,
-    file_path: Option<String>,
+    file_path: &str,
     args: &[String],
 ) {
     let default_path = ".shell_default_history";

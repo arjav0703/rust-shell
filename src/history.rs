@@ -104,7 +104,7 @@ impl History {
     }
 
     fn appent_to_file(&self, filename: &str) {
-        match fs::read_to_string(filename) {
+        match fs::read_to_string(&self.history_file) {
             Ok(contents) => {
                 let result = OpenOptions::new()
                     .create(true)
@@ -122,6 +122,7 @@ impl History {
                 eprintln!("Failed to read {}: {}", filename, e);
             }
         }
+        self.clear();
     }
 
     fn write_to_file(&self, filename: &str) {

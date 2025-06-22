@@ -227,17 +227,20 @@ pub fn history_handler(
             }
             Err(e) => eprintln!("Failed to read {}: {}", file, e),
         }
+        rl.load_history(file).unwrap_or_else(|e| {
+            eprintln!("Error loading history from {}: {}", file, e);
+        });
         return;
     }
 
     if args.first().map(|s| s.as_str()) == Some("-w") {
         let file = &args[1];
-
-        if Path::new(file).exists() {
-            if let Err(err) = rl.load_history(file) {
-                eprintln!("Warning: couldn't load history {}: {}", file, err);
-            }
-        }
+        //
+        //if Path::new(file).exists() {
+        //    if let Err(err) = rl.load_history(file) {
+        //        eprintln!("Warning: couldn't load history {}: {}", file, err);
+        //    }
+        //}
 
         if let Err(err) = rl.save_history(file) {
             eprintln!("Error writing history to {}: {}", file, err);

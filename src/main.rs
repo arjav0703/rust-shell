@@ -19,7 +19,7 @@ fn run_loop() {
     let cli = Cli::new();
     let history_file = cli.get_history_file();
 
-    //std::fs::remove_file(history_file).ok();
+    std::fs::remove_file(".shell_default_history").ok();
 
     let mut rl = Editor::new().unwrap();
     rl.set_helper(Some(ShellHelper));
@@ -38,6 +38,6 @@ fn run_loop() {
         //dbg!("Parsed input: {} {}", &args, &file_path);
         let (cmd, arg) = parse_args(args);
 
-        funcs::matcher_ext(arg, cmd, &BUILTINS, file_path, history_file);
+        funcs::matcher_ext(arg, &cmd, &BUILTINS, file_path, history_file, &mut rl);
     }
 }

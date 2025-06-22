@@ -1,7 +1,9 @@
 use crate::builtin_functions;
 use crate::ext_commands;
-use crate::history::History;
-
+//use crate::history::History;
+use crate::history::history_handler;
+use crate::Editor;
+use crate::ShellHelper;
 pub fn parse_redirection(input: &str) -> (String, Option<String>) {
     // Look for redirection operators
 
@@ -24,15 +26,21 @@ pub fn parse_redirection(input: &str) -> (String, Option<String>) {
 
 pub fn matcher_ext(
     args: Vec<String>,
-    cmd: String,
+    cmd: &str,
     builtins: &[&str],
     file_path: Option<String>,
     history_file: &str,
+    rl: &mut Editor<ShellHelper, rustyline::history::DefaultHistory>,
 ) {
-    let mut history = History::new(String::from(history_file));
-    history.add(&cmd, &args);
+    //let mut history = History::new(String::from(history_file));
+    let line = if args.is_empty() {
+        cmd.to_string()
+    } else {
+        format!("{} {}", cmd, args.join(" "))
+    };
+    let _ = rl.add_history_entry(line);
 
-    match cmd.as_str() {
+    match cmd {
         "exit" => {
             std::process::exit(0);
         }
@@ -43,8 +51,10 @@ pub fn matcher_ext(
         }
         "pwd" => builtin_functions::pwd(),
         "cd" => builtin_functions::cd(&args),
-        "history" => history.show_last(&args),
-        "clear" => history.clear(),
+        "history" => history_handler(rl, file_path, &args),
+        "clear" => rl.clear_history().unwrap_or_else(|e| {
+            eprintln!("Error clearing history: {}", e);
+        }),
         other => {
             ext_commands::execute_cmd(other, &args, file_path);
             //builtin_functions::redirect::run_with_redirection(other, &args, builtins);
